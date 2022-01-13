@@ -1,0 +1,12 @@
+[package]
+name = "testvalue"
+version = "0.1.0"
+authors = ["v01dstar"]
+edition = "2018"
+
+
+[dependencies]
+lazy_static = "1.4"
+
+[features]
+testvalue = []
