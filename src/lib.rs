@@ -38,7 +38,7 @@ impl MapEntry {
 }
 
 lazy_static::lazy_static! {
-    static ref TESTVALUE_REGISTRY: RwLock<HashMap<String, MapEntry>>= Default::default();
+    static ref REGISTRY: RwLock<HashMap<String, MapEntry>>= Default::default();
 }
 
 /// Set the callback for a test value adjustment.
@@ -66,7 +66,7 @@ where
     T: Any,
     F: FnMut(&mut T) + Send + Sync + 'static,
 {
-    let mut registry = TESTVALUE_REGISTRY.write().unwrap();
+    let mut registry = REGISTRY.write().unwrap();
     registry.insert(
         name.into(),
         MapEntry::new(
@@ -103,18 +103,17 @@ impl ScopedCallback {
 
 impl Drop for ScopedCallback {
     fn drop(&mut self) {
-        let mut registry = TESTVALUE_REGISTRY.write().unwrap();
+        let mut registry = REGISTRY.write().unwrap();
         registry.remove(&self.name);
     }
 }
 
-#[doc(hidden)]
 pub fn internal_adjust<S, T>(name: S, var: &mut T)
 where
     S: Into<String>,
     T: Clone + 'static,
 {
-    let mut registry = TESTVALUE_REGISTRY.write().unwrap();
+    let mut registry = REGISTRY.write().unwrap();
     // Clone the var here, since the argument is required to be 'static.
     let mut clone = var.clone();
     if let Some(entry) = registry.get_mut(&name.into()) {
