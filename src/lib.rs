@@ -125,7 +125,7 @@ where
     *var = clone;
 }
 
-/// Define a test value adjustment (requires `enable_testvalue` feature).
+/// Define a test value adjustment (requires `testvalue-hook` feature).
 #[macro_export]
 #[cfg(feature = "testvalue-hook")]
 macro_rules! adjust {
@@ -134,7 +134,7 @@ macro_rules! adjust {
     }};
 }
 
-/// Define a test value adjustment (disabled, see `enable_testvalue` feature).
+/// Define a test value adjustment (disabled, see `testvalue-hook` feature).
 #[macro_export]
 #[cfg(not(feature = "testvalue-hook"))]
 macro_rules! adjust {
