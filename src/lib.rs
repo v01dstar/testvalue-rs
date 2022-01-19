@@ -125,18 +125,18 @@ where
     *var = clone;
 }
 
-/// Define a test value adjustment (requires `testvalue` feature).
+/// Define a test value adjustment (requires `enable_testvalue` feature).
 #[macro_export]
-#[cfg(feature = "testvalue")]
+#[cfg(feature = "enable_testvalue")]
 macro_rules! adjust {
     ($name:expr, $var:expr) => {{
         $crate::internal_adjust($name, $var);
     }};
 }
 
-/// Define a test value adjustment (disabled, see `testvalue` feature).
+/// Define a test value adjustment (disabled, see `enable_testvalue` feature).
 #[macro_export]
-#[cfg(not(feature = "testvalue"))]
+#[cfg(not(feature = "enable_testvalue"))]
 macro_rules! adjust {
     ($name:expr, $var:expr) => {{}};
 }

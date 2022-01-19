@@ -9,4 +9,4 @@ edition = "2018"
 lazy_static = "1.4"
 
 [features]
-testvalue = []
+enable_testvalue = []

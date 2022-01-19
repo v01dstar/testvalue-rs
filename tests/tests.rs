@@ -1,5 +1,5 @@
 #[test]
-#[cfg_attr(not(feature = "testvalue"), ignore)]
+#[cfg_attr(not(feature = "enable_testvalue"), ignore)]
 fn test_value_adjust() {
     let f = || -> i32 {
         let mut var = 1;
@@ -16,7 +16,7 @@ fn test_value_adjust() {
 }
 
 #[test]
-#[cfg_attr(not(feature = "testvalue"), ignore)]
+#[cfg_attr(not(feature = "enable_testvalue"), ignore)]
 fn test_value_adjust_raii() {
     let f = || -> i32 {
         let mut var = 1;
