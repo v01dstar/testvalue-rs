@@ -127,7 +127,7 @@ where
 
 /// Define a test value adjustment (requires `enable_testvalue` feature).
 #[macro_export]
-#[cfg(feature = "enable_testvalue")]
+#[cfg(feature = "testvalue-hook")]
 macro_rules! adjust {
     ($name:expr, $var:expr) => {{
         $crate::internal_adjust($name, $var);
@@ -136,7 +136,7 @@ macro_rules! adjust {
 
 /// Define a test value adjustment (disabled, see `enable_testvalue` feature).
 #[macro_export]
-#[cfg(not(feature = "enable_testvalue"))]
+#[cfg(not(feature = "testvalue-hook"))]
 macro_rules! adjust {
     ($name:expr, $var:expr) => {{}};
 }
