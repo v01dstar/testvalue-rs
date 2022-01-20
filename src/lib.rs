@@ -1,38 +1,18 @@
 use std::any::{Any, TypeId};
 use std::collections::HashMap;
 use std::fmt::Debug;
-use std::sync::{Arc, Mutex, RwLock};
-
-#[derive(Clone)]
-struct Callback1(Arc<Mutex<dyn Fn(&mut dyn Any) + Send + Sync + 'static>>);
-
-impl Debug for Callback1 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str("Callback1()")
-    }
-}
-
-impl Callback1 {
-    fn new(f: Box<dyn Fn(&mut dyn Any) + Send + Sync>) -> Self {
-        Callback1(Arc::new(Mutex::new(f)))
-    }
-
-    fn run(&self, var: &mut dyn Any) {
-        let callback = self.0.lock().unwrap();
-        callback(var);
-    }
-}
+use std::sync::RwLock;
 
 struct MapEntry {
     type_id: TypeId,
-    cb: Callback1,
+    cb: Box<dyn Fn(&mut dyn Any) + Send + Sync + 'static>,
 }
 
 impl MapEntry {
     fn new(type_id: TypeId, f: Box<dyn Fn(&mut dyn Any) + Send + Sync>) -> MapEntry {
         MapEntry {
             type_id: type_id,
-            cb: Callback1::new(f),
+            cb: Box::new(f),
         }
     }
 }
@@ -114,12 +94,11 @@ where
     T: 'static,
 {
     let registry = REGISTRY.read().unwrap();
-    // Clone the var here, since the argument is required to be 'static.
     if let Some(entry) = registry.get(&name.into()) {
         if entry.type_id != TypeId::of::<T>() {
             panic!("Type mismatch");
         }
-        entry.cb.run(var);
+        (entry.cb)(var);
     }
 }
 
