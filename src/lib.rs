@@ -4,7 +4,7 @@ use std::fmt::Debug;
 use std::sync::{Arc, Mutex, RwLock};
 
 #[derive(Clone)]
-struct Callback1(Arc<Mutex<dyn FnMut(&mut dyn Any) + Send + Sync + 'static>>);
+struct Callback1(Arc<Mutex<dyn Fn(&mut dyn Any) + Send + Sync + 'static>>);
 
 impl Debug for Callback1 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -13,12 +13,12 @@ impl Debug for Callback1 {
 }
 
 impl Callback1 {
-    fn new(f: Box<dyn FnMut(&mut dyn Any) + Send + Sync>) -> Self {
+    fn new(f: Box<dyn Fn(&mut dyn Any) + Send + Sync>) -> Self {
         Callback1(Arc::new(Mutex::new(f)))
     }
 
-    fn run(&mut self, var: &mut dyn Any) {
-        let callback = &mut self.0.lock().unwrap();
+    fn run(&self, var: &mut dyn Any) {
+        let callback = self.0.lock().unwrap();
         callback(var);
     }
 }
@@ -29,7 +29,7 @@ struct MapEntry {
 }
 
 impl MapEntry {
-    fn new(type_id: TypeId, f: Box<dyn FnMut(&mut dyn Any) + Send + Sync>) -> MapEntry {
+    fn new(type_id: TypeId, f: Box<dyn Fn(&mut dyn Any) + Send + Sync>) -> MapEntry {
         MapEntry {
             type_id: type_id,
             cb: Callback1::new(f),
@@ -60,11 +60,11 @@ lazy_static::lazy_static! {
 /// }
 /// ```
 ///
-pub fn set_callback<S, T, F>(name: S, mut f: F)
+pub fn set_callback<S, T, F>(name: S, f: F)
 where
     S: Into<String>,
     T: Any,
-    F: FnMut(&mut T) + Send + Sync + 'static,
+    F: Fn(&mut T) + Send + Sync + 'static,
 {
     let mut registry = REGISTRY.write().unwrap();
     registry.insert(
@@ -94,7 +94,7 @@ impl ScopedCallback {
     where
         S: Into<String> + Copy,
         T: Any,
-        F: FnMut(&mut T) + Send + Sync + 'static,
+        F: Fn(&mut T) + Send + Sync + 'static,
     {
         set_callback(name.clone(), f);
         ScopedCallback { name: name.into() }
@@ -113,13 +113,13 @@ where
     S: Into<String>,
     T: 'static,
 {
-    let mut registry = REGISTRY.write().unwrap();
+    let registry = REGISTRY.read().unwrap();
     // Clone the var here, since the argument is required to be 'static.
-    if let Some(entry) = registry.get_mut(&name.into()) {
-        if (*entry).type_id != TypeId::of::<T>() {
+    if let Some(entry) = registry.get(&name.into()) {
+        if entry.type_id != TypeId::of::<T>() {
             panic!("Type mismatch");
         }
-        (*entry).cb.run(var);
+        entry.cb.run(var);
     }
 }
 
