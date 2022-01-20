@@ -111,18 +111,16 @@ impl Drop for ScopedCallback {
 pub fn internal_adjust<S, T>(name: S, var: &mut T)
 where
     S: Into<String>,
-    T: Clone + 'static,
+    T: 'static,
 {
     let mut registry = REGISTRY.write().unwrap();
     // Clone the var here, since the argument is required to be 'static.
-    let mut clone = var.clone();
     if let Some(entry) = registry.get_mut(&name.into()) {
         if (*entry).type_id != TypeId::of::<T>() {
             panic!("Type mismatch");
         }
-        (*entry).cb.run(&mut clone);
+        (*entry).cb.run(var);
     }
-    *var = clone;
 }
 
 /// Define a test value adjustment (requires `testvalue-hook` feature).
